@@ -1,27 +1,71 @@
-// src/store/auth.store.ts
+"use client";
+
 import { create } from "zustand";
+
+export interface User {
+  id: string;
+  email: string;
+  nombre: string;
+  pais?: string;
+  moneda?: string;
+  rol?: {
+    id: string;
+    nombre: string;
+  };
+}
 
 interface AuthState {
   token: string | null;
-  user: any | null;
-  setAuth: (token: string, user: any) => void;
+  user: User | null;
+  isLoading: boolean;
+  setAuth: (token: string, user: User | null) => void;
   logout: () => void;
+  setLoading: (loading: boolean) => void;
 }
 
+// Función segura para obtener user del localStorage
+const getStoredUser = (): User | null => {
+  if (typeof window === "undefined") return null;
+  const userStr = localStorage.getItem("user");
+  if (!userStr || userStr === "null" || userStr === "undefined") return null;
+  try {
+    return JSON.parse(userStr);
+  } catch {
+    return null;
+  }
+};
+
+// Función segura para obtener token del localStorage
+const getStoredToken = (): string | null => {
+  if (typeof window === "undefined") return null;
+  const token = localStorage.getItem("token");
+  if (!token || token === "null" || token === "undefined") return null;
+  return token;
+};
+
 export const useAuthStore = create<AuthState>((set) => ({
-  token: typeof window !== "undefined" ? localStorage.getItem("token") : null,
-  user: typeof window !== "undefined" ? JSON.parse(localStorage.getItem("user") || "null") : null,
+  token: getStoredToken(),
+  user: getStoredUser(),
+  isLoading: false,
 
   setAuth: (token, user) => {
-    localStorage.setItem("token", token);
-    localStorage.setItem("user", JSON.stringify(user));
+    if (typeof window !== "undefined") {
+      localStorage.setItem("token", token);
+      if (user) {
+        localStorage.setItem("user", JSON.stringify(user));
+      }
+    }
     set({ token, user });
   },
 
   logout: () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+    }
     set({ token: null, user: null });
     window.location.href = "/login";
   },
+
+  setLoading: (loading) => set({ isLoading: loading }),
 }));

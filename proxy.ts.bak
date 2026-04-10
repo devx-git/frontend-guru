@@ -1,0 +1,44 @@
+// proxy.ts
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+
+export function proxy(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+  
+  // Buscar token en cookies O en headers
+  let token = request.cookies.get('token')?.value;
+  
+  // Si no está en cookies, buscar en Authorization header
+  if (!token) {
+    const authHeader = request.headers.get('authorization');
+    if (authHeader?.startsWith('Bearer ')) {
+      token = authHeader.substring(7);
+    }
+  }
+  
+  // Rutas públicas
+  const publicRoutes = ['/login', '/register', '/'];
+  const isPublicRoute = publicRoutes.some(route => pathname === route || pathname.startsWith(route + '?'));
+  
+  // Rutas protegidas
+  const protectedRoutes = ['/dashboard', '/eventos', '/mis-gurus', '/wallet'];
+  const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
+  
+  console.log(`[Proxy] Path: ${pathname}, Token: ${!!token}, IsProtected: ${isProtectedRoute}`);
+  
+  if (isProtectedRoute && !token) {
+    const loginUrl = new URL('/login', request.url);
+    loginUrl.searchParams.set('redirect', pathname);
+    return NextResponse.redirect(loginUrl);
+  }
+  
+  if (token && isPublicRoute && pathname !== '/') {
+    return NextResponse.redirect(new URL('/dashboard', request.url));
+  }
+  
+  return NextResponse.next();
+}
+
+export const config = {
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|public/|videos/).*)'],
+};

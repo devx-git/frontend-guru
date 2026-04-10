@@ -27,7 +27,7 @@ export interface Evento {
 export const getEventosActivos = async () => {
   try {
     // Usamos el endpoint correcto de tus logs
-    const res = await api.get("/eventos/disponibles");
+    const res = await api.get("/eventos");
     return res.data;
   } catch (error) {
     console.error("Error cargando eventos:", error);
@@ -35,7 +35,7 @@ export const getEventosActivos = async () => {
   }
 };
 
-export const getEventoDetalle = async (id: string) => {
+export const getEventoDetalle = async (id: string): Promise<Evento> => {
   try {
     const res = await api.get(`/eventos/${id}/detalle`);
     return res.data;

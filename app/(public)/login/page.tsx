@@ -9,40 +9,62 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Trophy, Eye, EyeOff, Mail, Lock } from "lucide-react";
+import { authService } from "@/services/auth.service";
+import { useAuthStore } from "@/store/auth.store";
 
 export default function LoginPage() {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
 
+  const { setAuth, isLoading, setLoading } = useAuthStore();
+
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
+  e.preventDefault();
+  setError("");
+  setLoading(true);
+
+  try {
+    const data = await authService.login(formData);
     
-    try {
-      // Aquí irá la llamada a tu API de login
-      // const response = await api.post("/auth/login", formData);
-      
-      // Simulación de login exitoso
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Guardar token y redirigir
-      // localStorage.setItem("token", response.data.token);
-      router.push("/dashboard");
-    } catch (error) {
-      console.error("Error en login:", error);
-    } finally {
-      setLoading(false);
+    // Verificar que data y data.user existan
+    if (!data || !data.access_token) {
+      throw new Error("Respuesta inválida del servidor");
     }
+    
+    setAuth(data.access_token, data.user);
+    
+    // Redirigir según el rol (con validación segura)
+    window.location.href = "/dashboard";
+  } catch (err: any) {
+    console.error("Error en login:", err);
+    setError(err.response?.data?.message || err.message || "Error al iniciar sesión. Verifica tus credenciales.");
+  } finally {
+    setLoading(false);
+  }
+};
+
+  // Datos de prueba para desarrollo rápido
+  const fillTestUser = () => {
+    setFormData({
+      email: "cliente1@guru.com",
+      password: "123456",
+    });
+  };
+
+  const fillAdminUser = () => {
+    setFormData({
+      email: "admin@guru.com",
+      password: "123456",
+    });
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center p-4">
-      {/* Background decorativo */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
         <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-green-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
@@ -63,7 +85,12 @@ export default function LoginPage() {
 
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-5">
-            {/* Email */}
+            {error && (
+              <div className="bg-red-50 text-red-600 p-3 rounded-md text-sm border border-red-200">
+                {error}
+              </div>
+            )}
+
             <div className="space-y-2">
               <Label htmlFor="email" className="text-sm font-medium">
                 Correo electrónico
@@ -82,7 +109,6 @@ export default function LoginPage() {
               </div>
             </div>
 
-            {/* Contraseña */}
             <div className="space-y-2">
               <Label htmlFor="password" className="text-sm font-medium">
                 Contraseña
@@ -108,7 +134,28 @@ export default function LoginPage() {
               </div>
             </div>
 
-            {/* Recordar contraseña */}
+            {/* Botones de prueba rápida */}
+            <div className="flex gap-2">
+              <Button 
+                type="button" 
+                variant="outline" 
+                size="sm" 
+                className="flex-1 text-xs"
+                onClick={fillTestUser}
+              >
+                Usuario prueba
+              </Button>
+              <Button 
+                type="button" 
+                variant="outline" 
+                size="sm" 
+                className="flex-1 text-xs"
+                onClick={fillAdminUser}
+              >
+                Admin prueba
+              </Button>
+            </div>
+
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <input
@@ -130,9 +177,9 @@ export default function LoginPage() {
             <Button 
               type="submit" 
               className="w-full h-12 text-base font-semibold bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700"
-              disabled={loading}
+              disabled={isLoading}
             >
-              {loading ? (
+              {isLoading ? (
                 <div className="flex items-center gap-2">
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                   <span>Iniciando sesión...</span>
