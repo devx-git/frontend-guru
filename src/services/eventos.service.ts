@@ -41,11 +41,28 @@ export interface Evento {
   partidos?: Partido[];
 }
 
+const normalizeEvento = (evento: any): Evento => ({
+  ...evento,
+  acumulado_base: Number(evento.acumulado_base),
+  acumulado_actual: Number(evento.acumulado_actual),
+  porcentaje_casa: Number(evento.porcentaje_casa),
+  porcentaje_pozo: Number(evento.porcentaje_pozo),
+  porcentaje_impuesto: Number(evento.porcentaje_impuesto),
+  porcentaje_retiro: Number(evento.porcentaje_retiro),
+  limite_prediccion: Number(evento.limite_prediccion),
+  utilidad_promotor: Number(evento.utilidad_promotor),
+  impuestos_pagados: Number(evento.impuestos_pagados),
+});
+
 export const getEventosActivos = async (): Promise<Evento[]> => {
   try {
-    // Usamos el endpoint correcto de tus logs
     const res = await api.get("/eventos");
-    return res.data;
+
+    const data = Array.isArray(res.data)
+      ? res.data
+      : res.data.data || [];
+
+    return data.map(normalizeEvento);
   } catch (error) {
     console.error("Error cargando eventos:", error);
     return [];
