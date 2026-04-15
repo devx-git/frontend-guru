@@ -41,7 +41,7 @@ export interface Evento {
   partidos?: Partido[];
 }
 
-export const getEventosActivos = async () => {
+export const getEventosActivos = async (): Promise<Evento[]> => {
   try {
     // Usamos el endpoint correcto de tus logs
     const res = await api.get("/eventos");
