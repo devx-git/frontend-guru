@@ -99,11 +99,11 @@ export default function WalletPage() {
 
   const totalIngresos = movimientos
     .filter(m => m.tipo === 'AJUSTE' || m.tipo === 'CREDITO_INICIAL' || m.tipo === 'CREDITO_GANANCIA')
-    .reduce((sum, m) => sum + m.monto, 0);
+    .reduce((sum, m) => sum + Number(m.monto), 0);
   
   const totalEgresos = movimientos
     .filter(m => m.tipo === 'DEBITO_PREDICCION' || m.tipo === 'RETIRO')
-    .reduce((sum, m) => sum + m.monto, 0);
+    .reduce((sum, m) => sum + Number(m.monto), 0);
 
   if (loading) {
     return (
