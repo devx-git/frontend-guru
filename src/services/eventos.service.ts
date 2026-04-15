@@ -2,6 +2,21 @@
 import { api } from "@/lib/api";
 
 // Definimos los tipos según tu schema
+export interface Campeonato {
+  id: string;
+  nombre: string;
+}
+
+export interface Partido {
+  id: string;
+  equipo_local: string;
+  equipo_visitante: string;
+  fecha: string;
+  estado: string;
+  resultado_local?: number;
+  resultado_visitante?: number;
+}
+
 export interface Evento {
   id: string;
   nombre: string;
@@ -22,6 +37,8 @@ export interface Evento {
   utilidad_promotor: number;
   impuestos_pagados: number;
   cerrado: boolean;
+  campeonato?: Campeonato;
+  partidos?: Partido[];
 }
 
 export const getEventosActivos = async () => {
