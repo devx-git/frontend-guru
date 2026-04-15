@@ -36,7 +36,7 @@ export default function LoginPage() {
       throw new Error("Respuesta inválida del servidor");
     }
     
-    setAuth(data.access_token, data.user);
+    setAuth(data.access_token, data.user ?? null);
     
     // Redirigir según el rol (con validación segura)
     window.location.href = "/dashboard";
