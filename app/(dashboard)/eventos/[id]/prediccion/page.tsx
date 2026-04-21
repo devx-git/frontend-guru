@@ -217,9 +217,14 @@ export default function PrediccionPage() {
 
   // Función para enviar todas las predicciones al backend
   const enviarTodasPredicciones = async () => {
+    console.log("🔴 INICIO de enviarTodasPredicciones");
+    console.log("🔴 prediccionesPorGuru:", prediccionesPorGuru);
+    console.log("🔴 cantidadGurus:", cantidadGurus);
+    console.log("🔴 eventoId:", eventoId);
     setEnviando(true);
     try {
       const token = localStorage.getItem("token");
+       console.log("🔴 Token existe:", !!token);
       if (!token) {
         router.push("/login");
         return;
@@ -253,7 +258,8 @@ export default function PrediccionPage() {
         }));
         
         console.log(`📝 Guardando Gurú #${i + 1} con ${seleccionesArray.length} selecciones`);
-         
+        console.log(`📝 Enviando a /predicciones con eventoId: ${eventoId}`);
+        console.log("📝 seleccionesArray:", JSON.stringify(seleccionesArray, null, 2)); 
         // Llamada al endpoint POST /predicciones
         const response = await fetch("https://api.devxsolutions.pro/predicciones", {
           method: "POST",
@@ -332,15 +338,21 @@ export default function PrediccionPage() {
 
   // Al finalizar un Gurú, pasar al siguiente
   const handleSiguienteGuru = () => {
+     console.log("🔴 handleSiguienteGuru llamado");
+     console.log("🔴 Guardando predicciones del Gurú actual:", predicciones);
+     console.log("🔴 guruActual:", guruActual, "de", cantidadGurus);
     // Guardar predicciones del Gurú actual
     setPrediccionesPorGuru(prev => [...prev, predicciones]);
-    
+     console.log("🔴 Total predicciones por Gurú:", prediccionesPorGuru.length + 1);
     if (guruActual < cantidadGurus) {
       setGuruActual(guruActual + 1);
       setPredicciones({});
       setPasoActual(0);
       setConfirmado(false);
     } else {
+      console.log("🔴 Llamando a enviarTodasPredicciones");
+      console.log("🔴 Todos los Gurús completados, llamando a enviarTodasPredicciones");
+      console.log("🔴 prediccionesPorGuru final:", [...prediccionesPorGuru, predicciones]);
       enviarTodasPredicciones();
     }
   };
