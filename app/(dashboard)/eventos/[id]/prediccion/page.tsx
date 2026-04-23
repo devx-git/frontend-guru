@@ -171,9 +171,9 @@ export default function PrediccionPage() {
         partido.equipo_visitante,
         10
       );
-      
+      console.log("🔴 Predicciones generadas:", prediccionesDinamicas.length);
       setEventosPrediccion(prediccionesDinamicas);
-      
+      console.log("🔴 Eventos de predicción:", eventosPrediccion);
     } catch (err) {
       console.error("Error cargando datos:", err);
       setError("No se pudo cargar la información para realizar la predicción");
@@ -260,6 +260,12 @@ export default function PrediccionPage() {
         console.log(`📝 Guardando Gurú #${i + 1} con ${seleccionesArray.length} selecciones`);
         console.log(`📝 Enviando a /predicciones con eventoId: ${eventoId}`);
         console.log("📝 seleccionesArray:", JSON.stringify(seleccionesArray, null, 2)); 
+
+        if (seleccionesArray.length !== 10) {
+          console.error("❌ ERROR: Se esperaban 10 selecciones, pero hay", seleccionesArray.length);
+          throw new Error(`Se esperaban 10 selecciones, pero hay ${seleccionesArray.length}`);
+        }
+
         // Llamada al endpoint POST /predicciones
         const response = await fetch("https://api.devxsolutions.pro/predicciones", {
           method: "POST",
