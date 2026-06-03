@@ -39,14 +39,23 @@ export default function LoginPage() {
     setAuth(data.access_token, data.user ?? null);
     
     // Redirigir según el rol (con validación segura)
-    window.location.href = "/dashboard";
-  } catch (err: any) {
-    console.error("Error en login:", err);
-    setError(err.response?.data?.message || err.message || "Error al iniciar sesión. Verifica tus credenciales.");
-  } finally {
-    setLoading(false);
-  }
-};
+    
+  const userRole = data.user?.rol?.nombre;
+
+    if (userRole === "ADMIN") {
+      window.location.href = "/admin/dashboard";
+    } else if (userRole === "PROMOTOR") {
+      window.location.href = "/promotor/dashboard";
+    } else {
+      window.location.href = "/dashboard";
+    }
+    } catch (err: any) {
+      console.error("Error en login:", err);
+      setError(err.response?.data?.message || err.message || "Error al iniciar sesión. Verifica tus credenciales.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Datos de prueba para desarrollo rápido
   const fillTestUser = () => {

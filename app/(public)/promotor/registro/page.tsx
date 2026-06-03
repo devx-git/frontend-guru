@@ -37,45 +37,51 @@ export default function PromotorRegistroPage() {
   ];
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    setLoading(true);
+  e.preventDefault();
+  setError(null);
+  setLoading(true);
 
-    // Validar subdominio
-    if (!formData.subdominio) {
-      setError("El subdominio es requerido");
-      setLoading(false);
-      return;
-    }
+  if (!formData.subdominio) {
+    setError("El subdominio es requerido");
+    setLoading(false);
+    return;
+  }
 
-    if (!formData.acepta_terminos) {
-      setError("Debes aceptar los términos y condiciones para ser promotor");
-      setLoading(false);
-      return;
-    }
+  if (!formData.acepta_terminos) {
+    setError("Debes aceptar los términos y condiciones para ser promotor");
+    setLoading(false);
+    return;
+  }
 
-    try {
-      // Registrar como promotor
-      const response = await api.post("/auth/register/promotor", {
+  try {
+    const response = await fetch("https://api.devxsolutions.pro/auth/registro-promotor", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
         nombre: formData.nombre,
         email: formData.email,
         password: formData.password,
         pais: formData.pais,
         subdominio: formData.subdominio.toLowerCase().replace(/\s+/g, "-"),
-        acepta_terminos: formData.acepta_terminos,
-      });
+        acepta_terminos: formData.acepta_terminos
+      })
+    });
 
-      if (response.data.success) {
-        // Redirigir a página de éxito
-        router.push("/promotor/registro/exito");
-      }
-    } catch (err: any) {
-      console.error("Error en registro de promotor:", err);
-      setError(err.response?.data?.message || "Error al registrar como promotor. Intenta nuevamente.");
-    } finally {
-      setLoading(false);
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || "Error al registrar como promotor");
     }
-  };
+
+    // Si el registro es exitoso, redirigir al login
+    router.push("/login?registered=promotor");
+  } catch (err: any) {
+    console.error("Error en registro de promotor:", err);
+    setError(err.message || "Error al registrar como promotor. Intenta nuevamente.");
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center p-4">
