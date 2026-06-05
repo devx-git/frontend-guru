@@ -1,3 +1,6 @@
+/* ========== IMPORTACIÓN DE FUENTES (DEBE IR PRIMERO) ========== */
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Roboto:wght@300;400;500&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -25,6 +28,28 @@
     --ring: 221.2 83% 53.3%;
     --radius: 0.75rem;
   }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 142.1 70.6% 45.3%;
+    --secondary-foreground: 144.9 80.4% 10%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 47.9 95.8% 53.1%;
+    --accent-foreground: 26 83.3% 14.1%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.3% 48%;
+  }
 }
 
 @layer base {
@@ -36,7 +61,145 @@
   }
 }
 
-/* Scrollbar personalizado para sidebar */
+/* ========== ESTILOS PROFESIONALES ADICIONALES ========== */
+
+/* Clases de fuentes */
+.font-oswald {
+  font-family: 'Oswald', sans-serif;
+}
+
+.font-roboto {
+  font-family: 'Roboto', sans-serif;
+}
+
+/* Scrollbar personalizado para sidebar y áreas con scroll */
+.custom-scroll::-webkit-scrollbar {
+  width: 4px;
+}
+
+.custom-scroll::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+}
+
+.custom-scroll::-webkit-scrollbar-thumb {
+  background: rgba(141, 198, 63, 0.4);
+  border-radius: 4px;
+}
+
+.custom-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(141, 198, 63, 0.7);
+}
+
+/* Animaciones */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-spin {
+  animation: spin 0.8s linear infinite;
+}
+
+.animate-slide-in {
+  animation: slideIn 0.3s ease-out;
+}
+
+/* Badges personalizados */
+.badge {
+  @apply inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium;
+}
+
+.badge-ok {
+  @apply bg-green-100 text-green-700;
+}
+
+.badge-warning {
+  @apply bg-yellow-100 text-yellow-700;
+}
+
+.badge-error {
+  @apply bg-red-100 text-red-700;
+}
+
+.badge-info {
+  @apply bg-blue-100 text-blue-700;
+}
+
+.badge-purple {
+  @apply bg-purple-100 text-purple-700;
+}
+
+/* Botones personalizados (complemento a shadcn) */
+.btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50;
+}
+
+.btn-primary {
+  @apply bg-primary text-primary-foreground hover:bg-primary/90;
+}
+
+.btn-secondary {
+  @apply bg-secondary text-secondary-foreground hover:bg-secondary/90;
+}
+
+.btn-outline {
+  @apply border border-input bg-background hover:bg-accent hover:text-accent-foreground;
+}
+
+.btn-ghost {
+  @apply hover:bg-accent hover:text-accent-foreground;
+}
+
+.btn-destructive {
+  @apply bg-destructive text-destructive-foreground hover:bg-destructive/90;
+}
+
+/* Tablas personalizadas */
+.tbl {
+  @apply w-full border-collapse text-sm;
+}
+
+.tbl th {
+  @apply px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider border-b;
+}
+
+.tbl td {
+  @apply px-4 py-3 border-b border-border/50;
+}
+
+.tbl tr:hover td {
+  @apply bg-muted/20;
+}
+
+/* Tarjetas de estadísticas */
+.stat-card {
+  @apply bg-card border border-border rounded-lg p-4 flex items-center gap-4 transition-all hover:shadow-md;
+}
+
+.stat-icon {
+  @apply w-10 h-10 rounded-lg flex items-center justify-center;
+}
+
+.stat-value {
+  @apply text-2xl font-bold;
+}
+
+.stat-label {
+  @apply text-xs text-muted-foreground uppercase tracking-wider;
+}
+
+/* Scrollbar para sidebar */
 aside::-webkit-scrollbar {
   width: 4px;
 }

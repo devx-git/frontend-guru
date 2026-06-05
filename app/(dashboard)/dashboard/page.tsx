@@ -1,17 +1,17 @@
+// D:\Guru\guru-frontend\app\(dashboard)\page.tsx
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useAuthStore } from "@/store/auth.store";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { 
   TrendingUp, 
-  Trophy, 
-  Wallet, 
-  Calendar,
+  Calendar, 
   ArrowRight,
   Target,
+  Wallet,
   History,
   Loader2,
   Coins,
@@ -20,6 +20,7 @@ import {
 import { getEventosActivos, Evento } from "@/services/eventos.service";
 import { saldoService } from "@/services/saldo.service";
 
+// Types
 interface DashboardData {
   gurusComprados?: number;
   aciertos?: number;
@@ -43,88 +44,116 @@ export default function DashboardPage() {
   const [ultimasPredicciones, setUltimasPredicciones] = useState<Prediccion[]>([]);
   const [saldo, setSaldo] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [loadingEventos, setLoadingEventos] = useState(true);
-  const [mounted, setMounted] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  // Refs para controlar montaje y abort controllers
+  const isMounted = useRef(true);
+  const abortControllers = useRef<AbortController[]>([]);
 
-  useEffect(() => {
-    setMounted(true);
+  // Limpiar todos los abort controllers
+  const abortAllFetches = useCallback(() => {
+    abortControllers.current.forEach(controller => {
+      try {
+        controller.abort();
+      } catch (e) {}
+    });
+    abortControllers.current = [];
   }, []);
 
-  // Cargar datos del dashboard
-  useEffect(() => {
-    const cargarDashboard = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        
-        const token = localStorage.getItem("token");
-        
-        if (!token) {
-          setError("No hay sesión activa");
-          setLoading(false);
-          return;
-        }
-        
-        // 1. Obtener saldo
-        const saldoActual = await saldoService.getSaldo();
-        setSaldo(saldoActual);
-        
-        // 2. Obtener últimas predicciones
-        try {
-          const prediccionesRes = await fetch("https://api.devxsolutions.pro/predicciones/mis-predicciones", {
-            headers: { "Authorization": `Bearer ${token}` }
-          });
-          if (prediccionesRes.ok) {
-            const prediccionesData = await prediccionesRes.json();
-            setUltimasPredicciones(prediccionesData.slice(0, 3));
-          }
-        } catch (err) {
-          console.error("Error cargando predicciones:", err);
-        }
-        
-        // 3. Obtener datos del dashboard (gurús comprados, aciertos, etc)
-        try {
-          const res = await fetch("https://api.devxsolutions.pro/usuario/dashboard", {
-            headers: { "Authorization": `Bearer ${token}` }
-          });
-          if (res.ok) {
-            const data = await res.json();
-            setDashboardData(data);
-          }
-        } catch (err) {
-          console.error("Error cargando dashboard:", err);
-        }
-        
-      } catch (error) {
+  // Cargar datos del dashboard optimizado
+  const cargarDashboard = useCallback(async () => {
+    const controller = new AbortController();
+    abortControllers.current.push(controller);
+    
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const token = localStorage.getItem("token");
+      
+      if (!token) {
+        if (isMounted.current) setError("No hay sesión activa");
+        return;
+      }
+      
+      // Promise.all para cargar en paralelo (más rápido)
+      const [saldoActual, dashboardRes, prediccionesRes] = await Promise.allSettled([
+        saldoService.getSaldo(),
+        fetch("https://api.devxsolutions.pro/usuario/dashboard", {
+          headers: { "Authorization": `Bearer ${token}` },
+          signal: controller.signal
+        }),
+        fetch("https://api.devxsolutions.pro/predicciones/mis-predicciones", {
+          headers: { "Authorization": `Bearer ${token}` },
+          signal: controller.signal
+        })
+      ]);
+      
+      if (!isMounted.current) return;
+      
+      // Procesar saldo
+      if (saldoActual.status === 'fulfilled') {
+        setSaldo(saldoActual.value);
+      }
+      
+      // Procesar dashboard data
+      if (dashboardRes.status === 'fulfilled' && dashboardRes.value.ok) {
+        const data = await dashboardRes.value.json();
+        setDashboardData(data);
+      }
+      
+      // Procesar predicciones
+      if (prediccionesRes.status === 'fulfilled' && prediccionesRes.value.ok) {
+        const data = await prediccionesRes.value.json();
+        setUltimasPredicciones(data.slice(0, 3));
+      }
+      
+    } catch (error: any) {
+      if (error.name !== 'AbortError' && isMounted.current) {
         console.error("Error cargando dashboard:", error);
         setError(error instanceof Error ? error.message : "Error al cargar los datos");
-      } finally {
-        setLoading(false);
       }
-    };
-    
-    cargarDashboard();
+    } finally {
+      if (isMounted.current) setLoading(false);
+    }
   }, []);
 
   // Cargar eventos activos
-  useEffect(() => {
-    const cargarEventos = async () => {
-      try {
-        setLoadingEventos(true);
-        const eventosData = await getEventosActivos();
-        setEventos(eventosData);
-      } catch (error) {
-        console.error("Error cargando eventos:", error);
-      } finally {
-        setLoadingEventos(false);
-      }
-    };
+  const cargarEventos = useCallback(async () => {
+    const controller = new AbortController();
+    abortControllers.current.push(controller);
     
-    cargarEventos();
+    try {
+      const eventosData = await getEventosActivos();
+      if (isMounted.current) {
+        setEventos(eventosData || []);
+      }
+    } catch (error: any) {
+      if (error.name !== 'AbortError') {
+        console.error("Error cargando eventos:", error);
+      }
+    }
   }, []);
 
-  // Stats: 4 cards (Gurús comprados, Tasa acierto, Ganancias, Saldo)
+  useEffect(() => {
+    isMounted.current = true;
+    
+    // Cargar datos
+    cargarDashboard();
+    cargarEventos();
+    
+    // Cleanup: abortar todas las peticiones y limpiar estado
+    return () => {
+      isMounted.current = false;
+      abortAllFetches();
+      // Limpiar estado para liberar memoria
+      setDashboardData(null);
+      setEventos([]);
+      setUltimasPredicciones([]);
+    };
+  }, [cargarDashboard, cargarEventos, abortAllFetches]);
+
+  // Stats memoizado para evitar re-renderizados innecesarios
   const stats = [
     { 
       title: "Gurús comprados", 
@@ -157,37 +186,27 @@ export default function DashboardPage() {
   ];
 
   const formatearFecha = (fecha: string) => {
-    return new Date(fecha).toLocaleDateString("es-ES", {
-      day: "numeric",
-      month: "short",
-      hour: "2-digit",
-      minute: "2-digit"
-    });
+    try {
+      return new Date(fecha).toLocaleDateString("es-ES", {
+        day: "numeric",
+        month: "short",
+        hour: "2-digit",
+        minute: "2-digit"
+      });
+    } catch {
+      return fecha;
+    }
   };
 
   const getEstadoColor = (estado: string) => {
     switch(estado) {
-      case "GANADORA":
-        return "text-green-600 bg-green-50";
-      case "PERDEDORA":
-        return "text-red-600 bg-red-50";
-      default:
-        return "text-amber-600 bg-amber-50";
+      case "GANADORA": return "text-green-600 bg-green-50";
+      case "PERDEDORA": return "text-red-600 bg-red-50";
+      default: return "text-amber-600 bg-amber-50";
     }
   };
 
-  const getEstadoIcon = (estado: string) => {
-    switch(estado) {
-      case "GANADORA":
-        return <TrendingUp className="w-3 h-3" />;
-      case "PERDEDORA":
-        return <TrendingUp className="w-3 h-3 rotate-180" />;
-      default:
-        return <Clock className="w-3 h-3" />;
-    }
-  };
-
-  if (!mounted || loading) {
+  if (loading) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
@@ -200,7 +219,10 @@ export default function DashboardPage() {
       <div className="min-h-[60vh] flex flex-col items-center justify-center gap-4">
         <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center max-w-md">
           <p className="text-red-600 mb-4">{error}</p>
-          <Button variant="outline" onClick={() => window.location.reload()}>
+          <Button variant="outline" onClick={() => {
+            setError(null);
+            cargarDashboard();
+          }}>
             Reintentar
           </Button>
         </div>
@@ -218,9 +240,7 @@ export default function DashboardPage() {
           <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
           <p className="text-gray-500 mt-1">
             Bienvenido de vuelta,{" "}
-            <span className="font-semibold text-gray-700">
-              {userName}
-            </span>
+            <span className="font-semibold text-gray-700">{userName}</span>
           </p>
         </div>
         <Button asChild className="bg-gradient-to-r from-blue-600 to-green-600">
@@ -230,7 +250,7 @@ export default function DashboardPage() {
         </Button>
       </div>
 
-      {/* Stats Grid - 4 cards */}
+      {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map((stat) => {
           const Icon = stat.icon;
@@ -269,11 +289,7 @@ export default function DashboardPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {loadingEventos ? (
-              <div className="flex justify-center py-8">
-                <Loader2 className="w-6 h-6 animate-spin text-blue-600" />
-              </div>
-            ) : eventos.length === 0 ? (
+            {eventos.length === 0 ? (
               <div className="text-center py-8">
                 <Calendar className="w-12 h-12 text-gray-300 mx-auto mb-3" />
                 <p className="text-gray-500">No hay eventos activos en este momento</p>
@@ -300,7 +316,7 @@ export default function DashboardPage() {
                           {evento.nombre}
                         </p>
                         <p className="text-sm text-green-600 font-semibold mt-1">
-                          {evento.acumulado_actual.toLocaleString()} créditos
+                          {evento.acumulado_actual?.toLocaleString() || 0} créditos
                         </p>
                       </div>
                       <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity">
@@ -309,15 +325,6 @@ export default function DashboardPage() {
                     </div>
                   </Link>
                 ))}
-                {eventos.length > 3 && (
-                  <div className="text-center pt-2">
-                    <Button variant="link" asChild className="text-blue-600">
-                      <Link href="/eventos">
-                        Ver los {eventos.length} eventos disponibles <ArrowRight className="w-4 h-4 ml-1 inline" />
-                      </Link>
-                    </Button>
-                  </div>
-                )}
               </div>
             )}
           </CardContent>
@@ -329,11 +336,6 @@ export default function DashboardPage() {
             <CardTitle className="text-lg flex items-center gap-2">
               <History className="w-5 h-5 text-amber-600" />
               Últimas predicciones
-              {ultimasPredicciones.length > 0 && (
-                <span className="bg-amber-100 text-amber-700 text-xs px-2 py-0.5 rounded-full ml-2">
-                  {ultimasPredicciones.length} registros
-                </span>
-              )}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -353,11 +355,9 @@ export default function DashboardPage() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
                           <span className={`text-xs px-2 py-0.5 rounded-full flex items-center gap-1 ${getEstadoColor(prediccion.estado)}`}>
-                            {getEstadoIcon(prediccion.estado)}
                             <span>{prediccion.estado === "GANADORA" ? "Ganadora" : prediccion.estado === "PERDEDORA" ? "Perdedora" : "Pendiente"}</span>
                           </span>
-                          <span className="text-xs text-gray-400 flex items-center gap-1">
-                            <Clock className="w-3 h-3" />
+                          <span className="text-xs text-gray-400">
                             {formatearFecha(prediccion.fecha)}
                           </span>
                         </div>
@@ -367,9 +367,8 @@ export default function DashboardPage() {
                         <div className="flex items-center gap-3 mt-1 text-sm">
                           <span className="text-gray-500">{prediccion.cantidad_gurus} Gurú(s)</span>
                           {prediccion.premio > 0 && (
-                            <span className="text-green-600 font-semibold flex items-center gap-1">
-                              <TrendingUp className="w-3 h-3" />
-                              +{prediccion.premio} créditos
+                            <span className="text-green-600 font-semibold">
+                              +{prediccion.premio.toLocaleString()} créditos
                             </span>
                           )}
                         </div>
@@ -380,15 +379,6 @@ export default function DashboardPage() {
                     </div>
                   </Link>
                 ))}
-                {ultimasPredicciones.length >= 3 && (
-                  <div className="text-center pt-2">
-                    <Button variant="link" asChild className="text-blue-600">
-                      <Link href="/mis-gurus">
-                        Ver todas mis predicciones <ArrowRight className="w-4 h-4 ml-1 inline" />
-                      </Link>
-                    </Button>
-                  </div>
-                )}
               </div>
             )}
           </CardContent>
