@@ -40,12 +40,7 @@ const nextConfig = {
     // !! ADVERTENCIA: Esto permite que el build continúe incluso con errores de TypeScript
     ignoreBuildErrors: true,
   },
-
-  // ⚠️ IGNORAR ERRORES DE ESLINT EN BUILD (TEMPORAL)
-  eslint: {
-    // !! ADVERTENCIA: Esto permite que el build continúe incluso con errores de ESLint
-    ignoreDuringBuilds: true,
-  },
+  
 }
 
 module.exports = nextConfig
