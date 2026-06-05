@@ -8,12 +8,12 @@ const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-   title: "Gurú - Predicciones Deportivas",
-  description: "Gana con tu conocimiento deportivo. Compra Gurús, predice resultados y multiplica tus créditos.",
+  title: "KICKLAST - Predicciones Deportivas",
+  description: "Gana con tu conocimiento deportivo. Compra Gurús, predice resultados y multiplica tus créditos con KICKLAST.",
   icons: {
-    icon: "/images/logo-icon.png",
-    shortcut: "/images/logo-icon.png",
-    apple: "/images/logo-icon.png",
+    icon: "/images/kicklast-icon.png",
+    shortcut: "/images/kicklastlogo.png",
+    apple: "/images/kicklastlogo.png",
   },
 };
 
