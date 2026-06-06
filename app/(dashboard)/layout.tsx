@@ -20,6 +20,8 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { saldoService } from "@/services/saldo.service";
 import { NotificationBell } from "@/components/layout/NotificationBell";
+import { ThemeToggle } from "@/components/ThemeToggle";
+
 
 const menuItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -140,6 +142,7 @@ export default function DashboardLayout({
                 {saldo.toLocaleString()} créditos
               </span>
             </div>
+            <ThemeToggle />
             <NotificationBell />
             <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-green-500 rounded-full flex items-center justify-center text-white font-semibold text-sm shadow-md">
               {userInitial}

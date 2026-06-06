@@ -55,6 +55,18 @@
     --shadow-lg-premium: 0 10px 15px -3px rgb(0 0 0 / 0.1);
     --shadow-xl-premium: 0 20px 25px -5px rgb(0 0 0 / 0.1);
     --shadow-2xl-premium: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+    
+    /* Variables para modo claro */
+    --bg-primary: #f8fafc;
+    --bg-secondary: #f1f5f9;
+    --bg-card: #ffffff;
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --border-color: #e2e8f0;
+    
+    /* Fondo de imagen para modo claro */
+    --bg-image: none;
+    --bg-overlay: none;
   }
 
   .dark {
@@ -77,6 +89,18 @@
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 224.3 76.3% 48%;
+    
+    /* Variables para modo oscuro */
+    --bg-primary: #0f172a;
+    --bg-secondary: #1e293b;
+    --bg-card: #1e293b;
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --border-color: #334155;
+    
+    /* Fondo de imagen para modo oscuro */
+    --bg-image: url('/img/lobby.jpg');
+    --bg-overlay: linear-gradient(to bottom, rgba(0,0,0,0.8), rgba(0,0,0,0.5));
   }
 }
 
@@ -87,6 +111,12 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* Estilos base con variables */
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
 }
 
 /* ========== ESTILOS PROFESIONALES ADICIONALES ========== */
@@ -509,4 +539,13 @@ aside::-webkit-scrollbar-thumb:hover {
   background-clip: text;
   color: transparent;
   animation: gradientShift 5s ease infinite;
+}
+
+/* ======================================================
+   ========== MODO CLARO / OSCURO - TRANSICIONES ==========
+   ====================================================== */
+
+/* Transición suave para cambio de tema */
+* {
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
 }

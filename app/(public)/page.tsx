@@ -6,7 +6,6 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { getEventosActivos, Evento } from "@/services/eventos.service";
 import Link from "next/link";
 import { 
-  Trophy, 
   Users, 
   Lock, 
   Sparkles,
@@ -18,12 +17,9 @@ import {
   Globe,
   CheckCircle,
   Flame,
-  Target,
-  Zap,
-  Award,
-  TrendingUp,
-  Calendar
+  
 } from "lucide-react";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 // ========== CARRUSEL DE IMÁGENES ==========
 const carruselImages = [
@@ -114,6 +110,7 @@ export default function HomePage() {
             <Link href="#promotores" className="text-gray-300 hover:text-blue-400 transition">Promotores</Link>
           </nav>
           <div className="flex gap-2">
+            <ThemeToggle />
             <Button variant="ghost" asChild className="text-white hover:bg-white/10">
               <Link href="/login">Ingresar</Link>
             </Button>
