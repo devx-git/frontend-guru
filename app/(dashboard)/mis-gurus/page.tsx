@@ -14,7 +14,9 @@ import {
   Loader2,
   AlertCircle,
   Filter,
-  Search
+  Search,
+  Flame,
+  Coins
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -75,15 +77,15 @@ const mockPredicciones: Prediccion[] = [
 const getEstadoBadge = (estado: string) => {
   switch(estado) {
     case "GANADORA":
-      return <Badge className="bg-green-100 text-green-700 border-green-200">Ganadora 🎉</Badge>;
+      return <Badge className="bg-green-500/20 text-green-400 border-green-500/30 rounded-full">Ganadora 🎉</Badge>;
     case "PERDEDORA":
-      return <Badge className="bg-red-100 text-red-700 border-red-200">Perdedora</Badge>;
+      return <Badge className="bg-red-500/20 text-red-400 border-red-500/30 rounded-full">Perdedora</Badge>;
     case "PENDIENTE":
-      return <Badge className="bg-amber-100 text-amber-700 border-amber-200">Pendiente ⏳</Badge>;
+      return <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 rounded-full">Pendiente ⏳</Badge>;
     case "PARCIAL":
-      return <Badge className="bg-blue-100 text-blue-700 border-blue-200">Parcial 🎯</Badge>;
+      return <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30 rounded-full">Parcial 🎯</Badge>;
     default:
-      return <Badge variant="outline">{estado}</Badge>;
+      return <Badge variant="outline" className="border-white/20 text-gray-400">{estado}</Badge>;
   }
 };
 
@@ -100,14 +102,6 @@ export default function MisGurusPage() {
       try {
         setLoading(true);
         // TODO: Conectar con backend
-        // const token = localStorage.getItem("token");
-        // const res = await fetch("https://api.devxsolutions.pro/usuario/predicciones", {
-        //   headers: { Authorization: `Bearer ${token}` }
-        // });
-        // const data = await res.json();
-        // setPredicciones(data);
-        
-        // Usar datos mock por ahora
         setTimeout(() => {
           setPredicciones(mockPredicciones);
           setLoading(false);
@@ -137,161 +131,191 @@ export default function MisGurusPage() {
 
   if (loading) {
     return (
-      <div className="min-h-[60vh] flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+      <div className="min-h-[60vh] flex items-center justify-center bg-black">
+        <div className="text-center">
+          <div className="relative">
+            <div className="w-16 h-16 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin mx-auto mb-4" />
+            <Flame className="w-8 h-8 text-green-500 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+          </div>
+          <p className="text-gray-400">Cargando tus Gurús...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Mis Gurús</h1>
-          <p className="text-gray-500 mt-1">
-            Historial de tus predicciones y resultados
-          </p>
-        </div>
-        <Button asChild className="bg-gradient-to-r from-blue-600 to-green-600">
-          <Link href="/eventos">
-            Explorar eventos <ChevronRight className="w-4 h-4 ml-2" />
-          </Link>
-        </Button>
-      </div>
+    <div className="min-h-screen bg-black text-white">
+      
+      {/* Fondo lobby */}
+      <div className="fixed inset-0 w-full h-full bg-[url('/img/lobby.jpg')] bg-cover bg-center opacity-30 z-[-2]" />
+      <div className="fixed inset-0 bg-gradient-to-b from-black/80 via-black/50 to-black/90 z-[-1]" />
+      <div className="fixed inset-0 z-[-1] pointer-events-none bg-[linear-gradient(rgba(141,198,63,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(141,198,63,0.02)_1px,transparent_1px)] bg-[size:48px_48px]" />
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-        <Card className="border-0 shadow-sm">
-          <CardContent className="pt-4 text-center">
-            <p className="text-2xl font-bold">{stats.total}</p>
-            <p className="text-xs text-gray-500">Total Gurús</p>
-          </CardContent>
-        </Card>
-        <Card className="border-0 shadow-sm">
-          <CardContent className="pt-4 text-center">
-            <p className="text-2xl font-bold text-amber-600">{stats.pendientes}</p>
-            <p className="text-xs text-gray-500">Pendientes</p>
-          </CardContent>
-        </Card>
-        <Card className="border-0 shadow-sm">
-          <CardContent className="pt-4 text-center">
-            <p className="text-2xl font-bold text-green-600">{stats.ganadoras}</p>
-            <p className="text-xs text-gray-500">Ganadoras</p>
-          </CardContent>
-        </Card>
-        <Card className="border-0 shadow-sm">
-          <CardContent className="pt-4 text-center">
-            <p className="text-2xl font-bold text-red-600">{stats.perdidas}</p>
-            <p className="text-xs text-gray-500">Perdidas</p>
-          </CardContent>
-        </Card>
-        <Card className="border-0 shadow-sm bg-gradient-to-r from-green-50 to-emerald-50">
-          <CardContent className="pt-4 text-center">
-            <p className="text-2xl font-bold text-green-600">{stats.ganancias.toLocaleString()} créditos</p>
-            <p className="text-xs text-gray-500">Ganancias totales</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Filtros y búsqueda */}
-      <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
-        <div className="flex gap-2">
-          <Button 
-            variant={filter === "todos" ? "default" : "outline"} 
-            size="sm"
-            onClick={() => setFilter("todos")}
-            className={filter === "todos" ? "bg-gradient-to-r from-blue-600 to-green-600" : ""}
-          >
-            Todos
-          </Button>
-          <Button 
-            variant={filter === "pendiente" ? "default" : "outline"} 
-            size="sm"
-            onClick={() => setFilter("pendiente")}
-            className={filter === "pendiente" ? "bg-amber-600 hover:bg-amber-700" : ""}
-          >
-            Pendientes
-          </Button>
-          <Button 
-            variant={filter === "ganadora" ? "default" : "outline"} 
-            size="sm"
-            onClick={() => setFilter("ganadora")}
-            className={filter === "ganadora" ? "bg-green-600 hover:bg-green-700" : ""}
-          >
-            Ganadoras
-          </Button>
-        </div>
+      <div className="relative z-10 max-w-7xl mx-auto space-y-6 p-6">
         
-        <div className="relative w-full sm:w-64">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <Input
-            placeholder="Buscar evento..."
-            className="pl-9"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+        {/* Header */}
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-blue-500 via-green-500 to-emerald-500 bg-clip-text text-transparent">
+              Mis Gurús
+            </h1>
+            <p className="text-gray-400 mt-1">
+              Historial de tus predicciones y resultados
+            </p>
+          </div>
+          <Button asChild className="bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 rounded-full shadow-lg hover:shadow-xl transition-all duration-300">
+            <Link href="/eventos">
+              Explorar eventos <ChevronRight className="w-4 h-4 ml-2" />
+            </Link>
+          </Button>
         </div>
-      </div>
 
-      {/* Lista de predicciones */}
-      {prediccionesFiltradas.length === 0 ? (
-        <Card className="border-0 shadow-sm">
-          <CardContent className="py-12 text-center">
-            <Trophy className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-            <p className="text-gray-500">No tienes predicciones registradas</p>
-            <Button variant="outline" className="mt-4" asChild>
-              <Link href="/eventos">Comienza a predecir</Link>
-            </Button>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid gap-4">
-          {prediccionesFiltradas.map((prediccion) => (
-            <Card key={prediccion.id} className="border-0 shadow-sm hover:shadow-md transition-shadow">
-              <CardContent className="p-4">
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      {getEstadoBadge(prediccion.estado)}
-                      <span className="text-xs text-gray-400 flex items-center gap-1">
-                        <Calendar className="w-3 h-3" />
-                        {new Date(prediccion.fecha).toLocaleDateString("es-ES", {
-                          day: "numeric",
-                          month: "short",
-                          hour: "2-digit",
-                          minute: "2-digit"
-                        })}
-                      </span>
-                    </div>
-                    <h3 className="font-semibold text-gray-800">{prediccion.evento_nombre}</h3>
-                    <div className="flex items-center gap-4 mt-2 text-sm">
-                      <span className="text-gray-500">{prediccion.cantidad_gurus} Gurú(s)</span>
-                      {prediccion.premio && prediccion.premio > 0 && (
-                        <span className="text-green-600 font-semibold flex items-center gap-1">
-                          <TrendingUp className="w-3 h-3" />
-                          +{prediccion.premio} créditos
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    asChild
-                    className="shrink-0"
-                  >
-                    <Link href={`/eventos/${prediccion.evento_id}`}>
-                      <Eye className="w-4 h-4 mr-2" />
-                      Ver detalles
-                    </Link>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+        {/* Stats Cards */}
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+          <Card className="bg-white/5 backdrop-blur-sm border-white/10 rounded-xl">
+            <CardContent className="pt-4 text-center">
+              <p className="text-2xl font-bold text-white">{stats.total}</p>
+              <p className="text-xs text-gray-400">Total Gurús</p>
+            </CardContent>
+          </Card>
+          <Card className="bg-white/5 backdrop-blur-sm border-white/10 rounded-xl">
+            <CardContent className="pt-4 text-center">
+              <p className="text-2xl font-bold text-amber-400">{stats.pendientes}</p>
+              <p className="text-xs text-gray-400">Pendientes</p>
+            </CardContent>
+          </Card>
+          <Card className="bg-white/5 backdrop-blur-sm border-white/10 rounded-xl">
+            <CardContent className="pt-4 text-center">
+              <p className="text-2xl font-bold text-green-400">{stats.ganadoras}</p>
+              <p className="text-xs text-gray-400">Ganadoras</p>
+            </CardContent>
+          </Card>
+          <Card className="bg-white/5 backdrop-blur-sm border-white/10 rounded-xl">
+            <CardContent className="pt-4 text-center">
+              <p className="text-2xl font-bold text-red-400">{stats.perdidas}</p>
+              <p className="text-xs text-gray-400">Perdidas</p>
+            </CardContent>
+          </Card>
+          <Card className="bg-gradient-to-r from-green-500/20 to-emerald-500/20 backdrop-blur-sm border border-green-500/30 rounded-xl">
+            <CardContent className="pt-4 text-center">
+              <p className="text-2xl font-bold text-green-400">{stats.ganancias.toLocaleString()} créditos</p>
+              <p className="text-xs text-gray-400">Ganancias totales</p>
+            </CardContent>
+          </Card>
         </div>
-      )}
+
+        {/* Filtros y búsqueda */}
+        <div className="flex flex-col sm:flex-row gap-4 items-center justify-between bg-white/5 backdrop-blur-sm p-4 rounded-xl border border-white/10">
+          <div className="flex flex-wrap gap-2">
+            <Button 
+              variant={filter === "todos" ? "default" : "outline"} 
+              size="sm"
+              onClick={() => setFilter("todos")}
+              className={filter === "todos" ? "bg-gradient-to-r from-blue-600 to-green-600 shadow-md rounded-full" : "rounded-full border-white/20 text-white hover:bg-white/10"}
+            >
+              Todos
+            </Button>
+            <Button 
+              variant={filter === "pendiente" ? "default" : "outline"} 
+              size="sm"
+              onClick={() => setFilter("pendiente")}
+              className={filter === "pendiente" ? "bg-amber-500 hover:bg-amber-600 rounded-full" : "rounded-full border-white/20 text-white hover:bg-white/10"}
+            >
+              Pendientes
+            </Button>
+            <Button 
+              variant={filter === "ganadora" ? "default" : "outline"} 
+              size="sm"
+              onClick={() => setFilter("ganadora")}
+              className={filter === "ganadora" ? "bg-green-500 hover:bg-green-600 rounded-full" : "rounded-full border-white/20 text-white hover:bg-white/10"}
+            >
+              Ganadoras
+            </Button>
+            <Button 
+              variant={filter === "perdedora" ? "default" : "outline"} 
+              size="sm"
+              onClick={() => setFilter("perdedora")}
+              className={filter === "perdedora" ? "bg-red-500 hover:bg-red-600 rounded-full" : "rounded-full border-white/20 text-white hover:bg-white/10"}
+            >
+              Perdedoras
+            </Button>
+          </div>
+          
+          <div className="relative w-full sm:w-64">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+            <Input
+              placeholder="Buscar evento..."
+              className="pl-9 bg-white/5 border-white/10 text-white placeholder:text-gray-500 focus:border-green-500 focus:ring-green-500/20 rounded-full"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+        </div>
+
+        {/* Lista de predicciones */}
+        {prediccionesFiltradas.length === 0 ? (
+          <Card className="bg-white/5 backdrop-blur-sm border-white/10 rounded-2xl">
+            <CardContent className="py-12 text-center">
+              <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Trophy className="w-10 h-10 text-gray-600" />
+              </div>
+              <p className="text-gray-400">No tienes predicciones registradas</p>
+              <Button variant="outline" className="mt-4 rounded-full border-white/20 text-white hover:bg-white/10" asChild>
+                <Link href="/eventos">Comienza a predecir</Link>
+              </Button>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="grid gap-4">
+            {prediccionesFiltradas.map((prediccion) => (
+              <Card key={prediccion.id} className="bg-white/5 backdrop-blur-sm border-white/10 rounded-xl hover:bg-white/10 transition-all duration-300">
+                <CardContent className="p-4">
+                  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                    <div className="flex-1">
+                      <div className="flex flex-wrap items-center gap-2 mb-2">
+                        {getEstadoBadge(prediccion.estado)}
+                        <span className="text-xs text-gray-500 flex items-center gap-1">
+                          <Calendar className="w-3 h-3" />
+                          {new Date(prediccion.fecha).toLocaleDateString("es-ES", {
+                            day: "numeric",
+                            month: "short",
+                            hour: "2-digit",
+                            minute: "2-digit"
+                          })}
+                        </span>
+                      </div>
+                      <h3 className="font-semibold text-white">{prediccion.evento_nombre}</h3>
+                      <div className="flex flex-wrap items-center gap-4 mt-2 text-sm">
+                        <span className="text-gray-400 flex items-center gap-1">
+                          <Coins className="w-3 h-3" />
+                          {prediccion.cantidad_gurus} Gurú(s)
+                        </span>
+                        {prediccion.premio && prediccion.premio > 0 && (
+                          <span className="text-green-400 font-semibold flex items-center gap-1">
+                            <TrendingUp className="w-3 h-3" />
+                            +{prediccion.premio} créditos
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      asChild
+                      className="shrink-0 rounded-full border-white/20 text-white hover:bg-white/10 hover:border-green-500"
+                    >
+                      <Link href={`/eventos/${prediccion.evento_id}`}>
+                        <Eye className="w-4 h-4 mr-2" />
+                        Ver detalles
+                      </Link>
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

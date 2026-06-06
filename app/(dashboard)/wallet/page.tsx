@@ -12,7 +12,8 @@ import {
   Plus,
   Loader2,
   Filter,
-  Download
+  Download,
+  Flame
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,10 +28,10 @@ const getTipoIcon = (tipo: string) => {
     case "CREDITO_INICIAL":
     case "CREDITO_GANANCIA":
     case "MEMBRESIA":
-      return <ArrowDownLeft className="w-4 h-4 text-green-500" />;
+      return <ArrowDownLeft className="w-4 h-4 text-green-400" />;
     case "DEBITO_PREDICCION":
     case "RETIRO":
-      return <ArrowUpRight className="w-4 h-4 text-red-500" />;
+      return <ArrowUpRight className="w-4 h-4 text-red-400" />;
     default:
       return <Coins className="w-4 h-4 text-gray-500" />;
   }
@@ -54,12 +55,12 @@ const getTipoColor = (tipo: string) => {
     case "CREDITO_INICIAL":
     case "CREDITO_GANANCIA":
     case "MEMBRESIA":
-      return "text-green-600 bg-green-50";
+      return "text-green-400 bg-green-500/20";
     case "DEBITO_PREDICCION":
     case "RETIRO":
-      return "text-red-600 bg-red-50";
+      return "text-red-400 bg-red-500/20";
     default:
-      return "text-gray-600 bg-gray-50";
+      return "text-gray-400 bg-white/5";
   }
 };
 
@@ -107,158 +108,183 @@ export default function WalletPage() {
 
   if (loading) {
     return (
-      <div className="min-h-[60vh] flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+      <div className="min-h-[60vh] flex items-center justify-center bg-black">
+        <div className="text-center">
+          <div className="relative">
+            <div className="w-16 h-16 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin mx-auto mb-4" />
+            <Flame className="w-8 h-8 text-green-500 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+          </div>
+          <p className="text-gray-400">Cargando tu wallet...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Wallet</h1>
-          <p className="text-gray-500 mt-1">
-            Gestiona tus créditos y movimientos
-          </p>
-        </div>
-        <Button asChild className="bg-gradient-to-r from-blue-600 to-green-600">
-          <Link href="/recargar">
-            <Plus className="w-4 h-4 mr-2" />
-            Recargar créditos
-          </Link>
-        </Button>
-      </div>
+    <div className="min-h-screen bg-black text-white">
+      
+      {/* Fondo lobby */}
+      <div className="fixed inset-0 w-full h-full bg-[url('/img/lobby.jpg')] bg-cover bg-center opacity-30 z-[-2]" />
+      <div className="fixed inset-0 bg-gradient-to-b from-black/80 via-black/50 to-black/90 z-[-1]" />
+      <div className="fixed inset-0 z-[-1] pointer-events-none bg-[linear-gradient(rgba(141,198,63,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(141,198,63,0.02)_1px,transparent_1px)] bg-[size:48px_48px]" />
 
-      {/* Saldo Total */}
-      <div className="bg-gradient-to-r from-blue-600 to-green-600 rounded-2xl p-6 text-white">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-white/80 text-sm">Saldo disponible</p>
-            <p className="text-4xl font-bold mt-1">{saldo.toLocaleString()} créditos</p>
-          </div>
-          <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
-            <Coins className="w-6 h-6" />
-          </div>
-        </div>
-      </div>
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-2 gap-4">
-        <Card className="border-0 shadow-sm">
-          <CardContent className="pt-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs text-gray-500">Total ingresos</p>
-                <p className="text-xl font-bold text-green-600">{totalIngresos.toLocaleString()} créditos</p>
-              </div>
-              <TrendingUp className="w-8 h-8 text-green-100" />
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="border-0 shadow-sm">
-          <CardContent className="pt-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs text-gray-500">Total egresos</p>
-                <p className="text-xl font-bold text-red-600">{totalEgresos.toLocaleString()} créditos</p>
-              </div>
-              <TrendingDown className="w-8 h-8 text-red-100" />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Filtros */}
-      <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
-        <div className="flex flex-wrap gap-2">
-          <Button 
-            variant={filter === "todos" ? "default" : "outline"} 
-            size="sm"
-            onClick={() => setFilter("todos")}
-            className={filter === "todos" ? "bg-gradient-to-r from-blue-600 to-green-600" : ""}
-          >
-            Todos
-          </Button>
-          <Button 
-            variant={filter === "CREDITO_GANANCIA" ? "default" : "outline"} 
-            size="sm"
-            onClick={() => setFilter("CREDITO_GANANCIA")}
-          >
-            Ingresos
-          </Button>
-          <Button 
-            variant={filter === "DEBITO_PREDICCION" ? "default" : "outline"} 
-            size="sm"
-            onClick={() => setFilter("DEBITO_PREDICCION")}
-          >
-            Egresos
-          </Button>
-        </div>
+      <div className="relative z-10 max-w-7xl mx-auto space-y-6 p-6">
         
-        <div className="relative w-full sm:w-64">
-          <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <Input
-            placeholder="Buscar..."
-            className="pl-9"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+        {/* Header */}
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-blue-500 via-green-500 to-emerald-500 bg-clip-text text-transparent">
+              Wallet
+            </h1>
+            <p className="text-gray-400 mt-1">
+              Gestiona tus créditos y movimientos
+            </p>
+          </div>
+          <Button asChild className="bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 rounded-full shadow-lg hover:shadow-xl transition-all duration-300">
+            <Link href="/recargar">
+              <Plus className="w-4 h-4 mr-2" />
+              Recargar créditos
+            </Link>
+          </Button>
         </div>
-      </div>
 
-      {/* Lista de movimientos */}
-      {movimientosFiltrados.length === 0 ? (
-        <Card className="border-0 shadow-sm">
-          <CardContent className="py-12 text-center">
-            <Coins className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-            <p className="text-gray-500">No hay movimientos registrados</p>
-            <Button variant="outline" className="mt-4" asChild>
-              <Link href="/recargar">Realizar primera recarga</Link>
-            </Button>
-          </CardContent>
-        </Card>
-      ) : (
-        <Card className="border-0 shadow-sm">
-          <CardContent className="p-0">
-            <div className="divide-y">
-              {movimientosFiltrados.map((mov) => (
-                <div key={mov.id} className="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <div className={`p-2 rounded-full ${getTipoColor(mov.tipo)}`}>
-                      {getTipoIcon(mov.tipo)}
-                    </div>
-                    <div>
-                      <p className="font-medium text-gray-800">{getTipoNombre(mov.tipo)}</p>
-                      <p className="text-xs text-gray-400 flex items-center gap-1 mt-0.5">
-                        <Calendar className="w-3 h-3" />
-                        {new Date(mov.creado_en).toLocaleDateString("es-ES", {
-                          day: "numeric",
-                          month: "short",
-                          hour: "2-digit",
-                          minute: "2-digit"
-                        })}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className={`font-semibold ${
-                      mov.tipo === 'DEBITO_PREDICCION' || mov.tipo === 'RETIRO' 
-                        ? 'text-red-600' 
-                        : 'text-green-600'
-                    }`}>
-                      {mov.tipo === 'DEBITO_PREDICCION' || mov.tipo === 'RETIRO' ? '-' : '+'}
-                      {mov.monto.toLocaleString()} créditos
-                    </p>
-                    <p className="text-xs text-gray-400 mt-0.5">{mov.descripcion}</p>
-                  </div>
-                </div>
-              ))}
+        {/* Saldo Total */}
+        <div className="relative overflow-hidden rounded-2xl shadow-xl">
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-green-600" />
+          <div className="absolute inset-0 bg-black/30" />
+          <div className="relative p-6 text-white">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-white/80 text-sm">Saldo disponible</p>
+                <p className="text-4xl font-bold mt-1">{saldo.toLocaleString()} créditos</p>
+              </div>
+              <div className="w-14 h-14 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
+                <Coins className="w-7 h-7" />
+              </div>
             </div>
-          </CardContent>
-        </Card>
-      )}
+          </div>
+        </div>
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-2 gap-4">
+          <Card className="relative overflow-hidden bg-white/5 backdrop-blur-sm border-white/10 shadow-xl rounded-2xl">
+            <CardContent className="pt-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs text-gray-400">Total ingresos</p>
+                  <p className="text-xl font-bold text-green-400">{totalIngresos.toLocaleString()} créditos</p>
+                </div>
+                <TrendingUp className="w-8 h-8 text-green-500/20" />
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="relative overflow-hidden bg-white/5 backdrop-blur-sm border-white/10 shadow-xl rounded-2xl">
+            <CardContent className="pt-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs text-gray-400">Total egresos</p>
+                  <p className="text-xl font-bold text-red-400">{totalEgresos.toLocaleString()} créditos</p>
+                </div>
+                <TrendingDown className="w-8 h-8 text-red-500/20" />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Filtros */}
+        <div className="flex flex-col sm:flex-row gap-4 items-center justify-between bg-white/5 backdrop-blur-sm p-4 rounded-xl border border-white/10">
+          <div className="flex flex-wrap gap-2">
+            <Button 
+              variant={filter === "todos" ? "default" : "outline"} 
+              size="sm"
+              onClick={() => setFilter("todos")}
+              className={filter === "todos" ? "bg-gradient-to-r from-blue-600 to-green-600 shadow-md rounded-full" : "rounded-full border-white/20 text-white hover:bg-white/10"}
+            >
+              Todos
+            </Button>
+            <Button 
+              variant={filter === "CREDITO_GANANCIA" ? "default" : "outline"} 
+              size="sm"
+              onClick={() => setFilter("CREDITO_GANANCIA")}
+              className={filter === "CREDITO_GANANCIA" ? "bg-gradient-to-r from-green-500 to-emerald-500 rounded-full" : "rounded-full border-white/20 text-white hover:bg-white/10"}
+            >
+              Ingresos
+            </Button>
+            <Button 
+              variant={filter === "DEBITO_PREDICCION" ? "default" : "outline"} 
+              size="sm"
+              onClick={() => setFilter("DEBITO_PREDICCION")}
+              className={filter === "DEBITO_PREDICCION" ? "bg-gradient-to-r from-red-500 to-orange-500 rounded-full" : "rounded-full border-white/20 text-white hover:bg-white/10"}
+            >
+              Egresos
+            </Button>
+          </div>
+          
+          <div className="relative w-full sm:w-64">
+            <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+            <Input
+              placeholder="Buscar..."
+              className="pl-9 bg-white/5 border-white/10 text-white placeholder:text-gray-500 focus:border-green-500 focus:ring-green-500/20 rounded-full"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+        </div>
+
+        {/* Lista de movimientos */}
+        {movimientosFiltrados.length === 0 ? (
+          <Card className="bg-white/5 backdrop-blur-sm border-white/10 rounded-2xl">
+            <CardContent className="py-12 text-center">
+              <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Coins className="w-10 h-10 text-gray-600" />
+              </div>
+              <p className="text-gray-400">No hay movimientos registrados</p>
+              <Button variant="outline" className="mt-4 rounded-full border-white/20 text-white hover:bg-white/10" asChild>
+                <Link href="/recargar">Realizar primera recarga</Link>
+              </Button>
+            </CardContent>
+          </Card>
+        ) : (
+          <Card className="bg-white/5 backdrop-blur-sm border-white/10 rounded-2xl overflow-hidden">
+            <CardContent className="p-0">
+              <div className="divide-y divide-white/10">
+                {movimientosFiltrados.map((mov) => (
+                  <div key={mov.id} className="flex items-center justify-between p-4 hover:bg-white/5 transition-colors">
+                    <div className="flex items-center gap-3">
+                      <div className={`p-2 rounded-full ${getTipoColor(mov.tipo)}`}>
+                        {getTipoIcon(mov.tipo)}
+                      </div>
+                      <div>
+                        <p className="font-medium text-white">{getTipoNombre(mov.tipo)}</p>
+                        <p className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
+                          <Calendar className="w-3 h-3" />
+                          {new Date(mov.creado_en).toLocaleDateString("es-ES", {
+                            day: "numeric",
+                            month: "short",
+                            hour: "2-digit",
+                            minute: "2-digit"
+                          })}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className={`font-semibold ${
+                        mov.tipo === 'DEBITO_PREDICCION' || mov.tipo === 'RETIRO' 
+                          ? 'text-red-400' 
+                          : 'text-green-400'
+                      }`}>
+                        {mov.tipo === 'DEBITO_PREDICCION' || mov.tipo === 'RETIRO' ? '-' : '+'}
+                        {Number(mov.monto).toLocaleString()} créditos
+                      </p>
+                      <p className="text-xs text-gray-500 mt-0.5">{mov.descripcion}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+      </div>
     </div>
   );
 }
